@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CALIPOKE ADMIN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-database-compat.js"></script>
+<script src="calipoke-auth.js"></script>
+<style>
+:root{--bg:#0b0e14;--panel:#121722;--panel2:#171d2b;--raised:#1a2235;--border:#243049;--ink:#e8ecf3;--muted:#8b96ab;--faint:#5a6578;--accent:#4fd18b;--warn:#f2c15f;--err:#ff7b8a;--info:#7fb4f2;--sub:#a98bf5;--disp:'Space Grotesk',Inter,sans-serif;--body:Inter,system-ui,sans-serif;--mono:'JetBrains Mono',monospace;--r:14px}
+*{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px}
+header{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--panel);position:sticky;top:0;z-index:50}
+.brand{font-family:var(--disp);font-weight:800;letter-spacing:.04em;font-size:16px} .brand small{display:block;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.08em}
+.spacer{flex:1} main{padding:20px;max-width:1400px;margin:0 auto}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:4px;gap:4px} .seg button{background:none;border:0;color:var(--muted);padding:9px 16px;border-radius:9px;font:600 14px var(--body);cursor:pointer} .seg button.on{background:var(--raised);color:var(--ink)}
+.btn{background:var(--raised);border:1px solid var(--border);color:var(--ink);border-radius:11px;padding:9px 14px;font:600 13.5px var(--body);cursor:pointer;white-space:nowrap} .btn:hover{border-color:var(--accent)} .btn.primary{background:var(--accent);color:#06110b;border-color:var(--accent)} .btn.ghost{background:none} .btn.sm{padding:6px 10px;font-size:12.5px} .btn.danger{background:#2a1116;color:var(--err);border-color:#4a1f28} .btn.warn{background:#2b2410;color:var(--warn);border-color:#4a3d16} .btn:disabled{opacity:.45;cursor:default}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-top:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tinput,.sel{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;color:var(--ink);font:500 14px var(--body);padding:9px 11px;outline:none} .tinput:focus,.sel:focus{border-color:var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:13.5px} th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--panel);cursor:pointer;user-select:none} th.num,td.num{text-align:right} td{padding:8px 10px;border-bottom:1px solid #1b2232;vertical-align:middle} tr:hover td{background:#141a28}
+.tscroll{overflow:auto;max-height:70vh}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:7px;background:var(--raised);color:var(--muted)} .badge.ok{background:#13301f;color:var(--accent)} .badge.err{background:#2a1116;color:var(--err)} .badge.admin{background:#231a3a;color:var(--sub)}
+.mono{font-family:var(--mono);font-size:12.5px} .mini{font-size:12px;color:var(--muted)} .kvs{display:flex;gap:10px;flex-wrap:wrap} .kv{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;min-width:120px} .kv .n{font-family:var(--mono);font-size:22px;font-weight:700} .kv .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.modalbg{position:fixed;inset:0;background:rgba(5,8,14,.72);z-index:100;display:grid;place-items:center;padding:16px} .modal{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:22px 24px;width:min(560px,96vw);max-height:92vh;overflow:auto} .modal h2{margin:0 0 6px;font-family:var(--disp)} .fld{margin-top:12px} .fld label{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px} .fld .tinput,.fld .sel{width:100%}
+.pwbox{font-family:var(--mono);font-size:20px;background:var(--bg);border:1px dashed var(--accent);border-radius:12px;padding:14px;text-align:center;letter-spacing:.08em;margin-top:10px;user-select:all}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--raised);border:1px solid var(--border);border-radius:12px;padding:10px 16px;z-index:200;font-weight:600} .toast.ok{border-color:var(--accent)} .toast.err{border-color:var(--err);color:var(--err)}
+.hide{display:none!important} .act-sale{color:var(--accent)} .act-scan{color:var(--info)} .act-transfer{color:var(--warn)} .act-sign_in,.act-sign_out{color:var(--faint)}
+.rolesgrid td:first-child{font-weight:600} .rolesgrid input{width:18px;height:18px;accent-color:var(--accent)} .rolesgrid .app{background:var(--panel2);font-family:var(--disp);font-weight:700;color:var(--sub)}
+.note{background:#15233a;border:1px solid #2b4d73;border-radius:12px;padding:12px 14px;font-size:13px;margin-top:12px}
+</style>
+</head>
+<body>
+<header><div class="brand">CALIPOKE ADMIN<small>USERS · ROLES · ACTIVITY</small></div><div class="spacer"></div><span class="mini" id="buildPill">v2026-11-11a</span><div id="hdrUser"></div></header>
+<main id="app" class="hide">
+  <div class="row"><div class="seg" id="tabs"><button data-t="users" class="on">👥 Users</button><button data-t="activity">🕘 Activity</button><button data-t="roles">🛡 Roles & access</button></div><div class="spacer"></div><button class="btn primary" id="addUser">＋ Add user</button></div>
+  <div id="body"></div>
+</main>
+<script>
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtT=ts=>ts?new Date(ts).toLocaleString('en-US',{month:'2-digit',day:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+const dayOf=ts=>{ const d=new Date(ts); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+let toastT=null; function toast(m,k){ let t=$('.toast'); if(!t){ t=document.createElement('div'); t.className='toast'; document.body.appendChild(t); } t.textContent=m; t.className='toast '+(k||''); clearTimeout(toastT); toastT=setTimeout(()=>t.remove(),3200); }
+let _m=null; function modal(h){ closeModal(); const bg=document.createElement('div'); bg.className='modalbg'; bg.innerHTML='<div class="modal">'+h+'</div>'; bg.addEventListener('click',e=>{ if(e.target===bg) closeModal(); }); document.body.appendChild(bg); _m=bg; return bg; } function closeModal(){ if(_m){ _m.remove(); _m=null; } }
+const APPS={station:'Pack Station',transfer:'Transfer Request',inventory:'CPH Inventory',lessons:'Lessons',admin:'Admin'};
+const FEATURE_LABEL={station:{admin:'Admin abilities',guidebook:'Product Guidebook',pickpack:'Pick & Pack',shipment:'New Shipment',labels:'Label Print',inventory:'Inventory',stockup:'Stock up report',analyzer:'Analyzer',supplier:'Supplier tracker',kpi:'KPI tracking',streamer:'Streamer assist',plan:'Warehouse plan',lessons:'Lessons',returns:'Return tracker',transfer:'Transfer request',hub:'Calipoke ops hub',cphinventory:'CPH Inventory'},
+  transfer:{make:'Make request',approve:'Approve request',prepare:'Prepare items'},
+  inventory:{warehouse:'Warehouse',stockroom:'Stockroom',tiktok1:'Tiktok 1',ebay:'Ebay',whatnot:'Whatnot',singleslab:'Slab & Single',cardshow:'Card show'},
+  lessons:{view:'Lessons'},
+  admin:{users:'Create profile',passwords:'Change / reset password',roles:'Change roles',activity:'Activity history'}};
+let DB=null, USERS={}, ACT=[], tab='users', ACCESS_OV=null;
+let actSort={k:'ts',d:-1}, actF={user:'',app:'',action:'',from:'',to:'',q:''};
+
+CPAuth.init({app:'admin',header:'#hdrUser',onReady:start});
+function start(u){
+  if(u.role!=='admin'){ $('#app').classList.remove('hide'); CPAuth.denied('#app','Calipoke Admin'); return; }
+  DB=CPAuth.db; $('#app').classList.remove('hide');
+  DB.ref(CPAuth.ROOT+'/users').on('value',s=>{ USERS=s.val()||{}; if(tab==='users') render(); });
+  DB.ref(CPAuth.ROOT+'/access').on('value',s=>{ ACCESS_OV=s.val()||{}; if(tab==='roles') render(); });
+  const from=Date.now()-7*86400000; actF.from=dayOf(from); actF.to=dayOf(Date.now()); loadActivity();
+  $$('#tabs [data-t]').forEach(b=>b.onclick=()=>{ tab=b.dataset.t; $$('#tabs button').forEach(x=>x.classList.toggle('on',x===b)); if(tab==='activity') loadActivity(); render(); });
+  $('#addUser').onclick=openAddUser; render();
+}
+function loadActivity(){ const t0=actF.from?new Date(actF.from+'T00:00:00').getTime():0; const t1=actF.to?new Date(actF.to+'T23:59:59.999').getTime():Date.now()+86400000;
+  DB.ref(CPAuth.ROOT+'/activity').orderByChild('ts').startAt(t0).endAt(t1).limitToLast(5000).once('value').then(s=>{ ACT=[]; s.forEach(c=>{ ACT.push(Object.assign({id:c.key},c.val())); }); if(tab==='activity') render(); }); }
+function render(){ if(tab==='users') renderUsers(); else if(tab==='activity') renderActivity(); else renderRoles(); }
+
+/* ---------------- USERS ---------------- */
+function renderUsers(){ const list=Object.keys(USERS).map(uid=>Object.assign({uid},USERS[uid])).sort((a,b)=>(a.role==='admin'?0:1)-(b.role==='admin'?0:1)||String(a.name||'').localeCompare(String(b.name||'')));
+  const act=list.filter(u=>u.active!==false).length;
+  $('#body').innerHTML='<div class="kvs" style="margin-top:14px"><div class="kv"><div class="n">'+list.length+'</div><div class="l">accounts</div></div><div class="kv"><div class="n">'+act+'</div><div class="l">active</div></div>'+Object.keys(CPAuth.ROLES).map(r=>'<div class="kv"><div class="n">'+list.filter(u=>u.role===r).length+'</div><div class="l">'+esc(CPAuth.ROLES[r])+'</div></div>').join('')+'</div>'+
+    '<div class="card"><div class="tscroll"><table><thead><tr><th>Name</th><th>E-mail</th><th>Role</th><th>Status</th><th>Last sign-in</th><th>Created</th><th></th></tr></thead><tbody>'+(list.length?list.map(u=>'<tr'+(u.active===false?' style="opacity:.55"':'')+'><td><b>'+esc(u.name)+'</b></td><td class="mono">'+esc(u.email)+'</td><td><select class="sel" data-role="'+u.uid+'" style="padding:5px 8px">'+Object.keys(CPAuth.ROLES).map(r=>'<option value="'+r+'"'+(u.role===r?' selected':'')+'>'+esc(CPAuth.ROLES[r])+'</option>').join('')+'</select></td><td>'+(u.active===false?'<span class="badge err">disabled</span>':'<span class="badge ok">active</span>')+'</td><td class="mini">'+esc(fmtT(u.lastLogin))+(u.lastApp?' · '+esc(APPS[u.lastApp]||u.lastApp):'')+'</td><td class="mini">'+esc(fmtT(u.createdAt))+(u.createdBy?' · '+esc(u.createdBy):'')+'</td>'+
+      '<td class="row" style="justify-content:flex-end;flex-wrap:nowrap"><button class="btn sm" data-rename="'+u.uid+'">✎ Name</button><button class="btn sm warn" data-reset="'+u.uid+'">🔑 Reset password</button><button class="btn sm '+(u.active===false?'':'danger')+'" data-toggle="'+u.uid+'">'+(u.active===false?'Enable':'Disable')+'</button></td></tr>').join(''):'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">No users yet — add the first one.</td></tr>')+'</tbody></table></div>'+
+    '<div class="note">Passwords are stored by Firebase, not here. <b>Reset password</b> e-mails the employee a link to set a new one; if they have no mailbox access, disable the account and create a new one with a generated password.</div></div>';
+  $$('[data-role]').forEach(s=>s.onchange=async()=>{ const uid=s.dataset.role; const u=USERS[uid]; if(uid===CPAuth.user.uid&&s.value!=='admin'&&!confirm('Remove your own admin role?')){ s.value='admin'; return; } await DB.ref(CPAuth.ROOT+'/users/'+uid).update({role:s.value,roleChangedAt:Date.now(),roleChangedBy:CPAuth.user.name}); CPAuth.log('role_changed',{text:u.name+' → '+CPAuth.ROLES[s.value],ref:uid}); toast('Role saved','ok'); });
+  $$('[data-rename]').forEach(b=>b.onclick=async()=>{ const uid=b.dataset.rename; const n=prompt('Display name:',USERS[uid].name||''); if(!n||!n.trim()) return; await DB.ref(CPAuth.ROOT+'/users/'+uid).update({name:n.trim()}); CPAuth.log('user_renamed',{text:USERS[uid].name+' → '+n.trim(),ref:uid}); });
+  $$('[data-toggle]').forEach(b=>b.onclick=async()=>{ const uid=b.dataset.toggle; const u=USERS[uid]; const dis=u.active!==false; if(uid===CPAuth.user.uid){ toast('You cannot disable yourself','err'); return; } if(!confirm((dis?'Disable ':'Enable ')+u.name+'?')) return; await DB.ref(CPAuth.ROOT+'/users/'+uid).update({active:!dis,activeChangedAt:Date.now(),activeChangedBy:CPAuth.user.name}); CPAuth.log(dis?'user_disabled':'user_enabled',{text:u.name,ref:uid}); });
+  $$('[data-reset]').forEach(b=>b.onclick=async()=>{ const u=USERS[b.dataset.reset]; if(!confirm('Send a password-reset link to '+u.email+'?')) return; try{ await CPAuth.auth.sendPasswordResetEmail(u.email); CPAuth.log('password_reset_sent',{text:u.name+' <'+u.email+'>',ref:b.dataset.reset}); toast('Reset link sent to '+u.email,'ok'); }catch(e){ toast(e.message||String(e),'err'); } });
+}
+function genPassword(){ const a='abcdefghjkmnpqrstuvwxyz', A='ABCDEFGHJKLMNPQRSTUVWXYZ', d='23456789'; const pick=s=>s[Math.floor(Math.random()*s.length)]; let p=''; for(let i=0;i<3;i++) p+=pick(A)+pick(a)+pick(a); return p+'-'+pick(d)+pick(d)+pick(d)+pick(d); }
+function openAddUser(){ const d=modal('<h2>＋ Add user</h2><p class="mini">The account is created in Firebase Authentication; the profile and role are saved here. Give the employee the e-mail and the password — they can change it later from the user menu in any app.</p>'+
+    '<div class="fld"><label>Name (shown in the apps)</label><input id="auName" class="tinput" placeholder="e.g. Joe"></div><div class="fld"><label>Work e-mail</label><input id="auEmail" class="tinput" type="email" placeholder="name@winstontcgllc.com"></div>'+
+    '<div class="fld"><label>Role</label><select id="auRole" class="sel">'+Object.keys(CPAuth.ROLES).map(r=>'<option value="'+r+'"'+(r==='packer'?' selected':'')+'>'+esc(CPAuth.ROLES[r])+'</option>').join('')+'</select></div>'+
+    '<div class="fld"><label>Password</label><div class="row"><input id="auPass" class="tinput" style="flex:1;font-family:var(--mono)" value="'+genPassword()+'"><button class="btn" id="auGen">🎲 Generate</button></div></div>'+
+    '<div class="row" style="margin-top:16px"><button class="btn primary" id="auGo" style="flex:1;padding:12px">Create account</button><button class="btn ghost" id="auX">Cancel</button></div>');
+  d.querySelector('#auX').onclick=closeModal; d.querySelector('#auGen').onclick=()=>{ d.querySelector('#auPass').value=genPassword(); }; setTimeout(()=>d.querySelector('#auName').focus(),50);
+  d.querySelector('#auGo').onclick=async()=>{ const name=d.querySelector('#auName').value.trim(), email=d.querySelector('#auEmail').value.trim().toLowerCase(), role=d.querySelector('#auRole').value, pw=d.querySelector('#auPass').value; if(name.length<2){ toast('Name?','err'); return; } if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ toast('E-mail?','err'); return; } if(pw.length<6){ toast('Password: at least 6 characters','err'); return; }
+    if(Object.values(USERS).some(u=>String(u.email).toLowerCase()===email)){ toast('This e-mail already has a profile','err'); return; }
+    const b=d.querySelector('#auGo'); b.disabled=true;
+    /* create the account in a secondary Firebase app so the admin stays signed in */
+    let sec; try{ sec=firebase.app('cpadmin-secondary'); }catch(e){ sec=firebase.initializeApp(CPAuth.AUTH_CONFIG,'cpadmin-secondary'); }
+    try{ const cred=await sec.auth().createUserWithEmailAndPassword(email,pw); const uid=cred.user.uid; await sec.auth().signOut();
+      await DB.ref(CPAuth.ROOT+'/users/'+uid).set({email,name,role,active:true,createdAt:Date.now(),createdBy:CPAuth.user.name}); CPAuth.log('user_created',{text:name+' <'+email+'> · '+CPAuth.ROLES[role],ref:uid});
+      modal('<h2>✓ Account created</h2><p>Give these to <b>'+esc(name)+'</b>. The password is shown only once — it is not stored anywhere readable.</p><div class="fld"><label>E-mail</label><div class="pwbox" style="font-size:15px">'+esc(email)+'</div></div><div class="fld"><label>Password</label><div class="pwbox" id="pwShow">'+esc(pw)+'</div></div><div class="row" style="margin-top:16px"><button class="btn" id="pwCopy">📋 Copy e-mail + password</button><div class="spacer"></div><button class="btn primary" onclick="closeModal()">Done</button></div>');
+      $('#pwCopy').onclick=()=>{ navigator.clipboard.writeText(email+'\n'+pw).then(()=>toast('Copied','ok')); }; }
+    catch(e){ b.disabled=false; const c=String(e.code||''); toast(c.includes('email-already-in-use')?'This e-mail already has a Firebase account — use Reset password instead':(c.includes('operation-not-allowed')?'Enable Email/Password sign-in in Firebase Console → Authentication':(e.message||String(e))),'err'); } }; }
+
+/* ---------------- ACTIVITY ---------------- */
+function renderActivity(){ const users=Object.keys(USERS).map(uid=>({uid,name:USERS[uid].name})).sort((a,b)=>String(a.name).localeCompare(String(b.name))); const actions=[...new Set(ACT.map(a=>a.action))].sort();
+  let list=ACT.filter(a=>(!actF.user||a.uid===actF.user)&&(!actF.app||a.app===actF.app)&&(!actF.action||a.action===actF.action)&&(!actF.q||JSON.stringify(a).toLowerCase().includes(actF.q.toLowerCase())));
+  const k=actSort.k; list.sort((a,b)=>{ const x=a[k], y=b[k]; if(x==null&&y==null) return 0; if(x==null) return 1; if(y==null) return -1; return (typeof x==='number'?x-y:String(x).localeCompare(String(y)))*actSort.d; });
+  const th=(key,label,cls)=>'<th class="'+(cls||'')+'" data-sort="'+key+'">'+label+(actSort.k===key?(actSort.d>0?' ▲':' ▼'):'')+'</th>';
+  $('#body').innerHTML='<div class="card"><div class="row"><select class="sel" id="afUser"><option value="">All users</option>'+users.map(u=>'<option value="'+u.uid+'"'+(actF.user===u.uid?' selected':'')+'>'+esc(u.name)+'</option>').join('')+'</select><select class="sel" id="afApp"><option value="">All apps</option>'+Object.keys(APPS).map(a=>'<option value="'+a+'"'+(actF.app===a?' selected':'')+'>'+esc(APPS[a])+'</option>').join('')+'</select><select class="sel" id="afAction"><option value="">All actions</option>'+actions.map(a=>'<option value="'+esc(a)+'"'+(actF.action===a?' selected':'')+'>'+esc(a)+'</option>').join('')+'</select>'+
+    '<input class="tinput" type="date" id="afFrom" value="'+actF.from+'" style="color-scheme:dark"><input class="tinput" type="date" id="afTo" value="'+actF.to+'" style="color-scheme:dark"><input class="tinput" id="afQ" placeholder="Search text, item, location…" value="'+esc(actF.q)+'" style="min-width:220px"><div class="spacer"></div><span class="mini">'+list.length+' of '+ACT.length+' loaded</span><button class="btn" id="afCsv">⬇ CSV</button></div>'+
+    '<div class="tscroll" style="margin-top:12px"><table><thead><tr>'+th('ts','When')+th('name','Who')+th('role','Role')+th('app','App')+th('action','Action')+th('text','Details')+th('item','Item')+th('qty','Qty','num')+th('loc','Location')+'</tr></thead><tbody>'+(list.length?list.slice(0,3000).map(a=>'<tr><td class="mono mini">'+esc(fmtT(a.ts))+'</td><td><b>'+esc(a.name)+'</b></td><td class="mini">'+esc(CPAuth.ROLES[a.role]||a.role||'')+'</td><td class="mini">'+esc(APPS[a.app]||a.app||'')+'</td><td class="act-'+esc(a.action)+'"><b>'+esc(a.action)+'</b></td><td>'+esc(a.text||'')+'</td><td>'+esc(a.item||'')+'</td><td class="num mono">'+(a.qty!=null?esc(a.qty):'')+'</td><td class="mini">'+esc(a.loc||'')+'</td></tr>').join(''):'<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">Nothing in this range.</td></tr>')+'</tbody></table></div><p class="mini" style="margin-top:8px">Up to 5,000 most recent records of the chosen date range are loaded; narrow the dates for older history. Click a column to sort.</p></div>';
+  const re=()=>renderActivity(); $('#afUser').onchange=e=>{ actF.user=e.target.value; re(); }; $('#afApp').onchange=e=>{ actF.app=e.target.value; re(); }; $('#afAction').onchange=e=>{ actF.action=e.target.value; re(); }; $('#afQ').addEventListener('input',e=>{ actF.q=e.target.value; const p=e.target.selectionStart; re(); const n=$('#afQ'); n.focus(); try{ n.setSelectionRange(p,p); }catch(x){} });
+  $('#afFrom').onchange=e=>{ actF.from=e.target.value; loadActivity(); }; $('#afTo').onchange=e=>{ actF.to=e.target.value; loadActivity(); };
+  $$('[data-sort]').forEach(h=>h.onclick=()=>{ const k=h.dataset.sort; if(actSort.k===k) actSort.d*=-1; else actSort={k,d:k==='ts'?-1:1}; re(); });
+  $('#afCsv').onclick=()=>{ const rows=[['When','Who','Role','App','Action','Details','Item','Qty','Location']].concat(list.map(a=>[new Date(a.ts).toISOString(),a.name,a.role,a.app,a.action,a.text||'',a.item||'',a.qty!=null?a.qty:'',a.loc||''])); const txt=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n'); const bl=new Blob(['﻿'+txt],{type:'text/csv'}); const u=URL.createObjectURL(bl); const a=document.createElement('a'); a.href=u; a.download='activity_'+actF.from+'_'+actF.to+'.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(u),2000); };
+}
+
+/* ---------------- ROLES ---------------- */
+function effective(app,f){ const ov=((ACCESS_OV||{})[app]||{})[f]; if(ov&&typeof ov==='object') return Object.keys(ov).filter(r=>ov[r]); if(Array.isArray(ov)) return ov; return (CPAuth.ACCESS[app]||{})[f]||Object.keys(CPAuth.ROLES); }
+function renderRoles(){ const roles=Object.keys(CPAuth.ROLES);
+  $('#body').innerHTML='<div class="card"><div class="row"><h2 style="margin:0;font-family:var(--disp)">Who sees what</h2><span class="mini">Tick a box to give a role access to that block. Admin always has everything. Changes apply the next time an employee opens the app.</span><div class="spacer"></div><button class="btn ghost" id="rlReset">↺ Back to defaults</button></div>'+
+    '<div class="tscroll" style="margin-top:12px"><table class="rolesgrid"><thead><tr><th>Block</th>'+roles.map(r=>'<th style="text-align:center">'+esc(CPAuth.ROLES[r])+'</th>').join('')+'</tr></thead><tbody>'+Object.keys(FEATURE_LABEL).map(app=>'<tr><td class="app" colspan="'+(roles.length+1)+'">'+esc(APPS[app]||app).toUpperCase()+'</td></tr>'+Object.keys(FEATURE_LABEL[app]).map(f=>{ const eff=effective(app,f); return '<tr><td>'+esc(FEATURE_LABEL[app][f])+'</td>'+roles.map(r=>'<td style="text-align:center"><input type="checkbox" data-app="'+app+'" data-f="'+f+'" data-r="'+r+'" '+(r==='admin'?'checked disabled':(eff.includes(r)?'checked':''))+'></td>').join('')+'</tr>'; }).join('')).join('')+'</tbody></table></div></div>';
+  $$('.rolesgrid input[type=checkbox]').forEach(cb=>cb.onchange=async()=>{ const {app,f}=cb.dataset; const set={}; roles.forEach(r=>{ const el=document.querySelector('.rolesgrid input[data-app="'+app+'"][data-f="'+f+'"][data-r="'+r+'"]'); set[r]=r==='admin'?true:!!(el&&el.checked); }); await DB.ref(CPAuth.ROOT+'/access/'+app+'/'+f).set(set); CPAuth.log('access_changed',{text:(APPS[app]||app)+' · '+FEATURE_LABEL[app][f]+' → '+roles.filter(r=>set[r]).map(r=>CPAuth.ROLES[r]).join(', ')}); toast('Saved','ok'); });
+  $('#rlReset').onclick=async()=>{ if(!confirm('Reset every block to the default matrix?')) return; await DB.ref(CPAuth.ROOT+'/access').remove(); CPAuth.log('access_reset',{text:'role matrix reset to defaults'}); toast('Defaults restored','ok'); };
+}
+</script>
+</body>
+</html>
