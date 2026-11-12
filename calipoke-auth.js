@@ -15,7 +15,7 @@
    • CPAuth.log(action, {text, item, qty, loc, ref})  → one line in the activity history
    • CPAuth.switchUser() / CPAuth.signOut()
    • The header gets a "👤 Name · Role" button with Switch user / Sign out.
-   BUILD 2026-11-11a
+   BUILD 2026-11-12a
    ============================================================ */
 (function(){
   'use strict';
@@ -30,7 +30,7 @@
   const ACCESS={
     station:{ admin:['admin'], guidebook:ALL, pickpack:['admin','wh_backend','packer','receiver'], shipment:['admin','wh_backend','receiver'], labels:['admin','wh_backend','receiver','ls_backend'],
       inventory:['admin','wh_backend','packer','receiver'], stockup:['admin','wh_backend'], analyzer:['admin'], supplier:['admin'], kpi:['admin'], streamer:['admin','streamer','ls_backend'],
-      plan:ALL, lessons:ALL, returns:['admin','wh_backend'], transfer:ALL, hub:ALL, cphinventory:ALL },
+      plan:ALL, lessons:ALL, returns:['admin','wh_backend'], transfer:ALL, hub:ALL, cphinventory:ALL, orderprep:['admin'] },
     transfer:{ make:ALL, approve:['admin'], prepare:['admin','wh_backend','receiver'] },
     inventory:{ warehouse:['admin','wh_backend','packer','ls_backend'], stockroom:['admin','wh_backend','receiver','ls_backend'], tiktok1:['admin','wh_backend','streamer','ls_backend'], ebay:['admin','wh_backend','streamer','ls_backend'],
       whatnot:['admin','wh_backend','streamer','ls_backend'], singleslab:['admin','wh_backend','ls_backend'], cardshow:['admin','wh_backend','ls_backend'] },
